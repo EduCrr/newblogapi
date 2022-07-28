@@ -16,6 +16,10 @@ class Post extends Model
         'category',
         'images'
     ];
+    public $keyType = 'string';
+    protected $hidden = [
+        'category_id'
+    ];
 
     public $timestamps = false;
 

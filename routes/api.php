@@ -25,12 +25,13 @@ Route::get('/categories', [CategoriesController::class, 'index']);
 Route::get('/categorie/{id}', [CategoriesController::class, 'findOne']);
 Route::delete('/categorie/{id}', [CategoriesController::class, 'delete']);
 Route::post('/categorie', [CategoriesController::class, 'create']);
+Route::put('/categorie', [CategoriesController::class, 'update']);
 
+Route::get('search', [PostsController::class, 'search']); 
 Route::get('/posts', [PostsController::class, 'index']);
 Route::get('/post/{id}', [PostsController::class, 'findOne']);
 Route::delete('/post/{id}', [PostsController::class, 'delete']);
 Route::post('/post', [PostsController::class, 'create']);
 Route::put('/post/{id}', [PostController::class, 'update']); 
-
 Route::post('post/images/{id}', [PostController::class, 'updateImages']); 
 Route::delete('post/images/{id}', [PostController::class, 'deleteImage']); 

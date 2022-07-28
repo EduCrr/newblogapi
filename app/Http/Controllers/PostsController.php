@@ -12,19 +12,40 @@ use Illuminate\Support\Facades\File;
 class PostsController extends Controller
 {
     public function index(Request $request){
-        $posts = Post::all();
-        // foreach($posts as $key => $item){
-        //     $posts[$key]['imagens'] = $item->imagens;
-        //     $posts[$key]['category'] = $item->category;
-        // }
-        return $posts;
+       
+        $array = ['error' => ''];
+        $posts = Post::where('visivel', 1)->paginate(2);
+
+        if($posts){
+            
+            foreach($posts as $key => $item){
+            // $posts[$key]['imagens'] = $item->imagens;
+                $posts[$key]['category'] = $item->category;
+            }
+            $array['posts'] = $posts;
+            $array['path'] = url('content/banner/');
+        }else{
+            $array['error'] = 'Nenhum post foi encontrado';
+            return $array;
+        }
+        
+        return $array; 
     }
 
     public function findOne($id){
-        $post = Post::find($id);
-        $post['category'] = $post->category;
-        $post['imagens'] = $post->imagens;
-        return $post;
+        $array = ['error' => ''];
+
+        $post = Post::where('visivel', 1)->find($id);
+        if($post){
+            $post['category'] = $post->category;
+            $post['imagens'] = $post->imagens;
+            $array['path'] = url('content/imagens/');
+            $array['post'] = $post;
+            return $array;
+        }else{
+            $array['error'] = 'Nenhum post foi encontrado';
+            return $array;
+        }
     }
 
     public function create(Request $request){
@@ -109,6 +130,7 @@ class PostsController extends Controller
         if($id){
 
             //deletar images banco e pasta
+            File::delete(public_path("/content/banner/".$post->banner));
             $imgDel = Imagem::where('post_id', $post->id)->get();
             foreach($imgDel as $item){
                 File::delete(public_path("/content/images/".$item["imagem"]));
@@ -232,5 +254,39 @@ class PostsController extends Controller
         return $array;
 
     }
+
+    public function postImage(Request $request){
+        $request->validate([
+            'file' => 'image'
+        ]);
+
+        $ext = $request->file->extension();
+        $imageName = time().'.'.$ext;
+
+        $request->file->move(public_path('content/imagens'), $imageName);
+
+        return [
+            'location' => asset('content/imagens/'.$imageName)
+        ];
+    }
+
+    public function search(Request $request){
+        $array = ['error' => ''];
+
+        $q = $request->input('q');
+        
+        if($q){
+            $posts = Post::where('title', 'LIKE', '%'.$q.'%')->get();
+            $array['posts']['data'] = $posts;
+
+        }else{
+            $array['error'] = 'Digite algo para buscar!';
+            return $array;
+        }
+        $array['path'] = url('content/banner/');
+        return $array;
+
+    }
+
 
 }

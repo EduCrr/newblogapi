@@ -9,14 +9,24 @@ use Illuminate\Support\Facades\Validator;
 class CategoriesController extends Controller
 {
     public function index(Request $request){
+        $array = ['error' => ''];
         $categories = Category::all();
-        return $categories;
+        $array['categories'] = $categories;
+        
+        return $array;
     }
 
     public function findOne($id){
-        $category = Category::find($id);
-        $category['posts'] = $category->posts;
-        return $category;
+        $array = ['error' => ''];
+        $category = Category::find($id)->posts()->paginate(1);
+        if($category){
+            $array['posts'] = $category;
+            $array['path'] = url('content/banner/');
+        }else{
+            $array['error'] = 'Não foi encontrada!';
+            return $array;
+        }
+        return $array;
     }
    
     public function create(Request $request){
@@ -61,5 +71,30 @@ class CategoriesController extends Controller
         }
 
         return $array;  
+    }
+
+    public function update(Request $request, $id){
+        $array = ['error' => ''];
+
+        $rules = [
+            'name' => 'required',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if($validator->fails()){
+            $array['error'] = $validator->errors()->first();
+            return $array;
+        } 
+
+        $name = $request->input('name');
+        $category = Category::find($id);
+
+        if($name){
+            $category->name = $name;
+        }
+   
+        $category->save();
+        return $array;
     }
 }
